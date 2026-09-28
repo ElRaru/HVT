@@ -1,0 +1,376 @@
+  :root{
+    --bg:#15161a; --panel:#1c1e24; --panel2:#22242b; --border:#33353d;
+    --text:#e8e9ec; --text-dim:#9a9ca4; --accent:#d4553a; --accent2:#3a8bd4;
+    --danger:#e0453f; --ok:#3fae6a; --center:#23262f;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  /* Aviso de file://. Se oculta solo desde JS cuando la app se sirve por HTTP. */
+  #protoWarn{
+    display:none; flex-shrink:0; padding:9px 14px; font-size:12.5px; line-height:1.5;
+    background:#241f14; color:#e8c07a; border-bottom:1px solid #5c4a24;
+  }
+  #protoWarn strong{color:#f0bc60;}
+  #protoWarn code{
+    background:#17191d; border:1px solid #4b4e59; border-radius:4px;
+    padding:1px 5px; font-size:11.5px; color:var(--text);
+  }
+  #protoWarn .protoWarnCmd{display:block; margin-top:4px;}
+  #protoWarn .protoWarnNote{display:block; margin-top:3px; color:#b8964f;}
+  body{margin:0; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; display:flex; flex-direction:column;}
+  button{
+    background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:6px;
+    padding:6px 10px; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+  }
+  button:hover{border-color:#555; background:#282b33;}
+  button.active{border-color:var(--accent); color:var(--accent);}
+  input[type=text], input[type=url], select, textarea{
+    background:#141519; color:var(--text); border:1px solid var(--border); border-radius:6px;
+    font-size:13px; padding:5px 8px; font-family:inherit;
+  }
+  textarea{resize:none; width:100%; line-height:1.55;}
+  ::placeholder{color:#5c5e66;}
+
+  /* ---- top bar ---- */
+  /* ---- Barra de título ---- */
+  #topbar{
+    display:flex; align-items:center; gap:16px; padding:0 14px; height:46px;
+    border-bottom:1px solid var(--border); background:var(--panel); flex-shrink:0;
+  }
+  .brand{display:flex; align-items:baseline; gap:8px; flex-shrink:0;}
+  .brandMark{
+    font-size:11px; font-weight:700; letter-spacing:.09em; color:var(--bg);
+    background:var(--accent); border-radius:4px; padding:3px 6px; line-height:1;
+  }
+  .brandText{font-size:12.5px; color:var(--text-dim); letter-spacing:.01em; white-space:nowrap;}
+  .brandText em{font-style:normal; color:#5f616a;}
+  #topbarHint{
+    padding:3px 14px; font-size:11.5px; color:#5f616a; background:var(--panel);
+    border-bottom:1px solid var(--border); flex-shrink:0; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  /* El pin de la derecha manda en la referencia. Anclada cabe en la barra de
+     una línea; suelta sale del flujo con position:fixed, así que la barra no
+     crece y el eje de la franja no se desplaza. */
+  .pinBtn{
+    width:26px; height:26px; padding:0; flex-shrink:0; justify-content:center;
+    background:transparent; border-color:transparent; color:#5f616a;
+  }
+  .pinBtn:hover{color:var(--text); background:#24272e; border-color:transparent;}
+  .pinBtn[aria-pressed="true"]{color:var(--accent); background:rgba(212,85,58,.12);}
+
+  #videoBox{
+    width:74px; height:34px; flex-shrink:0; position:relative; overflow:hidden;
+    background:#0c0d10; border-radius:5px; border:1px solid var(--border);
+    transition:width .16s ease, height .16s ease;
+  }
+  #videoBox.floating{
+    position:fixed; width:330px; height:186px; z-index:50;
+    box-shadow:0 10px 34px rgba(0,0,0,.55); border-color:#454851;
+  }
+  #videoBox.docked #videoGrip{display:none;}
+  #videoBox.docking{transition:none;}
+  /* En miniatura los controles del <video> no caben y estorban. */
+  #videoBox.docked video::-webkit-media-controls{display:none;}
+
+  #videoBox.floating.dragging{cursor:grabbing;}
+  #videoGrip{
+    display:none; position:absolute; top:0; left:0; right:0; height:15px; z-index:3; cursor:grab;
+  }
+  #videoBox.floating #videoGrip{display:block;}
+  #videoBox.floating:hover #videoGrip::after{background:rgba(255,255,255,.5);}
+  #videoGrip::after{
+    content:''; position:absolute; top:5px; left:50%; transform:translateX(-50%);
+    width:30px; height:3px; border-radius:2px; background:rgba(255,255,255,.3);
+  }
+  #videoBox .phLong{display:none;}
+  #videoBox.docked .phLong{display:none;}
+  #videoBox.floating .phShort{display:none;}
+  #videoBox.floating .phLong{display:inline;}
+  #videoBox video, #videoBox iframe{width:100%; height:100%; border:0; display:block;}
+  #videoBox .placeholder{
+    width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    color:#54565f;font-size:12px;text-align:center;padding:6px; line-height:1.35;
+  }
+  #videoBox.docked .placeholder{font-size:9.5px; color:#4a4c55; padding:0 2px; letter-spacing:.02em;}
+  #videoTools{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;}
+  #emoIndicator{
+    position:absolute; bottom:4px; right:4px; font-size:20px; background:rgba(0,0,0,.55); border-radius:6px;
+    padding:2px 6px; line-height:1;
+  }
+  #videoBox.docked #emoIndicator{font-size:11px; bottom:1px; right:1px; padding:0 2px; border-radius:3px;}
+
+  #toolsCol{flex:1; display:flex; align-items:center; gap:4px; min-width:0;}
+  .toolsColLabel{font-size:11.5px; color:#5f616a; margin-left:8px; letter-spacing:.02em; white-space:nowrap;}
+  .sep{width:1px; height:22px; background:var(--border); margin:0 4px;}
+  .small-label{font-size:11px; color:var(--text-dim); margin-right:2px;}
+
+  /* ---- Botones de menú: planos hasta que hacen falta ---- */
+  .menuBtn{
+    background:transparent; border-color:transparent; color:var(--text-dim);
+    font-size:12.5px; padding:5px 9px; letter-spacing:.01em;
+  }
+  .menuBtn:hover{color:var(--text); background:#24272e; border-color:transparent;}
+  .menuBtn.open{color:var(--text); background:#2a2d35; border-color:var(--border);}
+  .menuBtn .caret{font-size:9px; opacity:.6; margin-left:1px;}
+
+  /* ---- Panel de menú: fila plana, sin botones dentro de botones ---- */
+  .menuPanel{min-width:246px; padding:4px; background:#1a1c22; border-color:#3a3d46;}
+  .menuItem{display:flex; align-items:center; gap:8px; border-radius:5px;}
+  .menuItem > button{
+    flex:1; justify-content:flex-start; gap:9px; background:transparent; border:1px solid transparent;
+    color:var(--text); font-size:12.5px; padding:6px 8px; min-width:0; text-align:left;
+  }
+  .menuItem > button:hover:not(:disabled){background:#252932; border-color:transparent;}
+  .menuItem > button:disabled{color:#5a5c64; cursor:default;}
+  .menuItem > button.active{color:var(--accent); background:rgba(212,85,58,.12);}
+  .miLabel{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .miKeys,.miTag{font-size:10.5px; color:#5f616a; white-space:nowrap; letter-spacing:.02em;}
+  .menuRule{height:1px; background:var(--border); margin:4px 6px;}
+
+  /* ---- dropdown genérico (Fuentes / Volumen) ---- */
+  .dropdownWrap{position:relative; flex-shrink:0;}
+  .dropdownPanel{
+    position:absolute; top:calc(100% + 6px); left:0; background:var(--panel2); border:1px solid var(--border);
+    border-radius:8px; padding:10px; display:none; z-index:70; min-width:260px; box-shadow:0 8px 24px rgba(0,0,0,.45);
+  }
+  .dropdownPanel.show{display:flex; flex-direction:column; gap:8px;}
+  .dropdownPanel .row{display:flex; gap:6px; align-items:center;}
+  .dropdownPanel .fileNote{font-size:11px; color:var(--text-dim);}
+
+  /* ---- columns ---- */
+  /* ---- franja de waveform de la referencia (siempre presente) ---- */
+  #refStripWrap{display:flex; flex-direction:column; flex-shrink:0; background:var(--panel);}
+  #refStrip{
+    height:56px; position:relative; background:#101114; overflow:hidden; border-bottom:1px solid var(--border);
+    cursor:pointer;
+  }
+  #refStrip.collapsed{height:0; border-bottom:none;}
+  #refStripCanvas{width:100%; height:100%; display:block;}
+  #refStripPlayhead{
+    position:absolute; top:0; bottom:0; width:2px; left:0; background:#fff; z-index:3;
+    box-shadow:0 0 4px rgba(255,255,255,.7); pointer-events:none;
+  }
+  #refStripEmpty{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:11px; color:var(--text-dim); text-align:center; padding:0 20px; pointer-events:none;
+  }
+  #refStripHandle{
+    height:9px; flex-shrink:0; cursor:ns-resize; display:flex; align-items:center; justify-content:center;
+    background:var(--panel2); border-bottom:1px solid var(--border); user-select:none;
+  }
+  #refStripHandle:hover{background:#2b2e36;}
+  #refStripHandle{
+    display:flex; align-items:center; justify-content:center; gap:10px; cursor:row-resize;
+  }
+  #refStripHandle .grip{width:34px; height:3px; background:#4a4c55; border-radius:2px;}
+  .stripToggle{
+    padding:0 6px; font-size:11px; line-height:1.3; color:var(--text-dim);
+    background:transparent; border-color:transparent; cursor:pointer;
+  }
+  .stripToggle:hover{color:var(--text); border-color:#555; background:#282b33;}
+
+  #columnsWrap{flex:1; display:flex; min-height:0; overflow:hidden;}
+  #columns{flex:1; display:grid; grid-template-columns: 1fr 1.2fr 1fr; overflow:hidden; min-height:0; transition: grid-template-columns .28s ease;}
+  #columns.empty::after{
+    content:"Sin columnas visibles — haz clic en una pestaña lateral para restaurar.";
+    grid-column:1/-1; display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:var(--text-dim);
+  }
+  .col{display:flex; flex-direction:column; border-right:1px solid var(--border); min-width:0; overflow:hidden;}
+  .col:last-child{border-right:none;}
+  .col.center{background:var(--center);}
+  .col-header{
+    display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid var(--border);
+    background:var(--panel); flex-shrink:0; gap:6px;
+  }
+  .col-header .col-title-text{
+    font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim);
+    display:flex; align-items:center; gap:6px; flex:1; min-width:0;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .col.center .col-header .col-title-text{color:var(--accent);}
+  .col-nav{display:flex; align-items:center; gap:3px; flex-shrink:0;}
+  .col-nav .colSep{width:1px; height:15px; background:var(--border); margin:0 3px; flex-shrink:0;}
+  .col-nav button{padding:2px 6px; font-size:12px; line-height:1; border-radius:4px; color:var(--text-dim); background:transparent;}
+  .col-nav button:hover:not(:disabled){color:var(--text); border-color:#555; background:#282b33;}
+  .col-nav button:disabled{opacity:.25; cursor:default;}
+  /* El botón de minimizar NO puede parecerse al de mover: glifo doble («»), fondo
+     hundido y borde más claro. El hover lo tiñe de acento. */
+  .colMinBtn{
+    font-size:14px !important; color:var(--text) !important; letter-spacing:-1px;
+    background:#17191d !important; border-color:#4b4e59 !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.5);
+  }
+  .colMinBtn:hover{
+    background:#2f323b !important; border-color:var(--accent) !important; color:var(--accent) !important;
+  }
+  /* El candado va aparte, con su propio separador, y se tiñe de ámbar mientras
+     la columna está bloqueada: de un vistazo se ve qué columnas son intocables. */
+  .colLockBtn{font-size:12px !important; line-height:1 !important; opacity:.65;}
+  .colLockBtn.locked{
+    opacity:1; color:#e0a33c !important;
+    background:#241f14 !important; border-color:#5c4a24 !important;
+  }
+  .colLockBtn.locked:hover{background:#332a19 !important; border-color:var(--accent) !important; color:#f0bc60 !important;}
+  .colLockBtn:not(.locked):hover{color:var(--accent) !important; border-color:#555 !important;}
+
+  /* ---- pestañas laterales de columnas minimizadas ---- */
+  .col-tabs{display:flex; flex-direction:column; gap:2px; padding:4px 3px; background:var(--panel); overflow-y:auto; flex-shrink:0;}
+  .col-tabs:empty{display:none;}
+  #tabsLeft{border-right:1px solid var(--border);}
+  #tabsRight{border-left:1px solid var(--border);}
+  .col-tabs::-webkit-scrollbar{width:6px;}
+  .col-tabs::-webkit-scrollbar-thumb{background:#3a3c44; border-radius:3px;}
+  .colTab{
+    writing-mode:vertical-rl; text-orientation:mixed;
+    max-height:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    padding:10px 4px; font-size:11px; color:var(--text-dim); border-radius:6px;
+  }
+  .colTab:hover{border-color:var(--accent); color:var(--text);}
+  .colTab .colTabText{overflow:hidden; text-overflow:ellipsis;}
+  .colTab .colTabX{writing-mode:horizontal-tb; font-size:10px; opacity:.45; flex-shrink:0;}
+  .colTab .colTabX:hover{opacity:1; color:var(--danger);}
+
+  .col-body{flex:1; overflow-y:auto; padding:6px;}
+  .col-body::-webkit-scrollbar{width:8px;}
+  .col-body::-webkit-scrollbar-thumb{background:#3a3c44; border-radius:4px;}
+
+  .cue{
+    border:1px solid transparent; border-radius:6px; padding:8px; margin-bottom:6px; cursor:default;
+    background:transparent;
+  }
+  .cue.active{border-color:var(--accent); background:rgba(212,85,58,.08);}
+  .cue .ts{font-size:10px; color:var(--text-dim); margin-bottom:4px; display:flex; justify-content:space-between; cursor:pointer; align-items:center;}
+  .cue .ts .ts-editable{cursor:text; padding:1px 3px; border-radius:3px; font-family:monospace;}
+  .cue .ts .ts-editable:hover{background:rgba(212,85,58,.15); color:var(--accent);}
+  .cue .charTag{color:var(--accent2); font-weight:600;}
+  .cue-text-readonly{font-size:13.5px; line-height:1.55; white-space:pre-wrap; cursor:pointer; padding:2px 0;}
+  .cue textarea{min-height:52px;}
+  .syllHint{font-size:10.5px; color:var(--text-dim); margin-top:3px; text-align:right;}
+  .emoTag{font-size:13px; margin-left:6px;}
+
+  /* ---- bottom bar ---- */
+  #bottombar{
+    display:flex; align-items:center; gap:12px; padding:10px 14px; border-top:1px solid var(--border);
+    background:var(--panel); flex-shrink:0;
+  }
+  #recBtn{
+    width:38px; height:38px; border-radius:50%; background:var(--danger); border:none; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  #recBtn.recording{animation:pulse 1s infinite;}
+  #recBtn .dot{width:14px; height:14px; background:#fff; border-radius:50%;}
+  #recBtn.recording .dot{border-radius:3px;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,69,63,.6);}70%{box-shadow:0 0 0 10px rgba(224,69,63,0);}100%{box-shadow:0 0 0 0 rgba(224,69,63,0);}}
+  #waveWrap{flex:1; height:34px; background:#141519; border:1px solid var(--border); border-radius:6px; overflow:hidden;}
+  #wave{width:100%; height:100%; display:block;}
+  #volBtn{position:relative; flex-shrink:0;}
+  #volPanel{
+    position:absolute; bottom:44px; right:0; background:var(--panel2); border:1px solid var(--border); border-radius:8px;
+    padding:10px; display:none; z-index:60; width:140px;
+  }
+  #volPanel.show{display:flex; align-items:center; gap:8px;}
+
+
+  #ctxMenu{
+    position:fixed; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:4px; display:none;
+    z-index:100; box-shadow:0 6px 20px rgba(0,0,0,.4);
+  }
+  #ctxMenu div{padding:6px 12px; font-size:13px; border-radius:5px; cursor:pointer; white-space:nowrap;}
+  #ctxMenu div:hover{background:#33363f;}
+
+  #statusBar{font-size:11px; color:var(--text-dim); padding:2px 14px 8px; flex-shrink:0; background:var(--panel); display:flex; align-items:center; gap:4px;}
+  #statusMsg{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .autosaveNote{opacity:.65; margin-left:auto; white-space:nowrap; padding-right:8px;}
+  /* Anadir linea vive aqui y no en el transporte: el panel inferior se puede
+     plegar, y una accion que crea filas no puede desaparecer con el. */
+  .statusAddCue{
+    margin-left:6px; padding:1px 8px; font-size:10.5px; line-height:1.5; flex-shrink:0;
+    color:var(--text-dim); background:transparent; border-color:transparent;
+  }
+  .statusAddCue:hover{color:var(--text); background:#282b33; border-color:#555;}
+  .bottomToggle{
+    margin-left:8px; padding:2px 8px; font-size:10.5px; line-height:1.4; color:var(--text-dim);
+    background:transparent; border-color:transparent; flex-shrink:0;
+  }
+  .bottomToggle:hover{color:var(--text); border-color:#555; background:#282b33;}
+  /* Plegado: la waveform de referencia y la línea de tiempo se van, y las
+     columnas —que son flex:1— se quedan con todo el alto. La barra de grabación
+     nunca se pliega: ahí está el botón de grabar. */
+  body.bottomCollapsed #refStripWrap,
+  body.bottomCollapsed #timelinePanel{display:none;}
+  a.fileHidden{display:none;}
+
+  /* ---- línea de tiempo ---- */
+  #timelinePanel{
+    border-top:1px solid var(--border); background:var(--panel); flex-shrink:0;
+    display:flex; flex-direction:column; height:200px; min-height:0;
+  }
+  #timelineTransport{
+    display:flex; align-items:center; gap:8px; padding:6px 14px; border-bottom:1px solid var(--border);
+    background:var(--panel2); flex-shrink:0;
+    /* Con los controles del recorrido la fila se llena: en una ventana estrecha
+       tiene que poder partirse en dos líneas en vez de empujar la barra fuera. */
+    flex-wrap:wrap; row-gap:6px;
+  }
+  #timelineTransport button{width:30px; height:30px; padding:0; border-radius:6px; display:flex; align-items:center; justify-content:center;}
+  #timelineTransport .tsep{width:1px; height:18px; background:var(--border); flex-shrink:0;}
+  /* "Recorrer" es texto, no un cuadrado de 30px como ▶ ⏸ ⏹. */
+  #timelineTransport .tgl{width:auto; height:24px; padding:0 10px; font-size:11px; font-family:inherit; letter-spacing:.2px;}
+  #timelineTransport .tgl.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  #timelineTransport .tgroup{display:flex; align-items:center; gap:5px; font-size:10.5px; color:var(--text-dim); white-space:nowrap;}
+  #timelineTransport .tgroup select{font-size:11px; padding:2px 4px; font-family:inherit; cursor:pointer;}
+  #timelineTransport .tcheck{cursor:pointer;}
+  #timelineTransport .tcheck input{margin:0; cursor:pointer; vertical-align:-1px;}
+  #timelineTransport .hint{font-size:10.5px; color:var(--text-dim); margin-left:4px;}
+  #timelineTransport .hint b{color:var(--text); font-weight:600;}
+  #timelineScroll{flex:1; overflow-y:auto; overflow-x:hidden; position:relative; min-height:0;}
+  #timelineRuler{position:relative; height:18px; margin:0 14px; border-bottom:1px solid var(--border);}
+  #timelineRuler span{position:absolute; font-size:9px; color:var(--text-dim); transform:translateX(-50%); top:0;}
+  #timelineMarkers{position:absolute; top:0; bottom:0; left:14px; right:14px; pointer-events:none; z-index:2;}
+  .dlgMarker{position:absolute; top:0; bottom:0; width:2px; background:var(--accent); pointer-events:none;}
+  .dlgMarker .grabZone{
+    position:absolute; top:0; bottom:0; left:-12px; width:24px; cursor:ew-resize; pointer-events:auto;
+  }
+  .dlgMarker .grabZone:hover{background:rgba(212,85,58,.15);}
+  .dlgMarker.dragging{background:#fff; width:3px; z-index:6;}
+  .dlgMarker .lbl{
+    position:absolute; top:2px; left:4px; font-size:8.5px; color:var(--accent); white-space:nowrap;
+    background:rgba(20,21,25,.85); padding:1px 4px; border-radius:3px; pointer-events:none;
+  }
+  #timelinePlayhead{
+    position:absolute; top:0; bottom:0; width:2px; background:#fff; z-index:5; cursor:ew-resize;
+    box-shadow:0 0 4px rgba(255,255,255,.6);
+  }
+  #timelineRuler, #timelineTracks{cursor:pointer;}
+  #timelineTracks{position:relative; padding:4px 0 8px;}
+  .track{display:flex; align-items:center; padding:3px 14px; gap:8px;}
+  .track .trackStar{
+    width:18px; height:18px; flex-shrink:0; border:none; background:transparent; color:var(--text-dim);
+    cursor:pointer; font-size:13px; padding:0; display:flex; align-items:center; justify-content:center;
+  }
+  .track .trackStar.on{color:#e8c34a;}
+  .track .trackLabel{width:120px; flex-shrink:0; font-size:11px; color:var(--text-dim); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .trackLane{position:relative; flex:1; height:24px; background:#141519; border-radius:4px; border:1px solid var(--border);}
+  .trackBlock{
+    position:absolute; top:2px; bottom:2px; border-radius:4px; cursor:pointer; font-size:9px; color:#fff;
+    display:flex; align-items:center; padding:0 5px; overflow:hidden; white-space:nowrap; opacity:.85;
+  }
+  .trackBlock:hover{opacity:1;}
+  .trackBlock.selected{outline:2px solid var(--ok);}
+  #timelineEmpty{padding:14px; font-size:12px; color:var(--text-dim); text-align:center;}
+
+  /* ---- modal archivos crudos ---- */
+  #rawModalOverlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:200;
+  }
+  #rawModalOverlay.show{display:flex;}
+  #rawModal{background:var(--panel2); border:1px solid var(--border); border-radius:10px; width:min(480px,90vw); max-height:70vh; overflow:hidden; display:flex; flex-direction:column;}
+  #rawModal header{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid var(--border);}
+  #rawModal header h3{margin:0; font-size:14px;}
+  #rawList{overflow-y:auto; padding:8px;}
+  .rawItem{display:flex; justify-content:space-between; align-items:center; padding:7px 8px; border-radius:6px; font-size:12.5px;}
+  .rawItem:hover{background:#2b2e36;}
+  .rawItem .meta{color:var(--text-dim); font-size:11px;}
+  #rawModal footer{padding:10px 14px; border-top:1px solid var(--border); font-size:11px; color:var(--text-dim);}

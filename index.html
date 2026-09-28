@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>HVT — Handy Vocal Translation (Alpha)</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">
+    <span class="brandMark" aria-hidden="true">HVT</span>
+    <span class="brandText">Handy Vocal Translation <em id="brandVersion"></em></span>
+  </div>
+  <div id="toolsCol">
+    <!-- Menú: el botón es la cabecera del desplegable. Un solo control, no dos. -->
+    <div class="dropdownWrap" id="sourcesWrap">
+      <button id="sourcesToggle" class="menuBtn" aria-haspopup="true" aria-expanded="false">Fuentes <span class="caret">▾</span></button>
+      <div class="dropdownPanel menuPanel" id="sourcesPanel">
+        <div class="menuItem"><button id="btnLoadVideo">Video o audio local</button><span class="fileNote" id="localFileNote">ninguno</span></div>
+        <input type="file" id="videoFileInput" class="fileHidden" accept="video/*,audio/*">
+        <div class="menuRule"></div>
+        <div class="menuItem"><button id="btnLoadSrt">Cargar SRT</button><span class="fileNote" id="srtFileNote">ninguno</span></div>
+        <input type="file" id="srtFileInput" class="fileHidden" accept=".srt">
+      </div>
+    </div>
+
+    <div class="dropdownWrap" id="colAddWrap">
+      <button id="btnAddColumn" class="menuBtn" aria-haspopup="true" aria-expanded="false">Añadir columna <span class="caret">▾</span></button>
+      <div class="dropdownPanel menuPanel" id="colPanel">
+        <div class="menuItem"><button data-type="adapted"><span class="miLabel">Adaptación adicional</span></button></div>
+        <div class="menuItem"><button data-type="rough"><span class="miLabel">Traducción bruta adicional</span></button></div>
+        <div class="menuItem"><button data-type="original"><span class="miLabel">Original adicional</span><span class="miTag">nace bloqueada</span></button></div>
+      </div>
+    </div>
+
+    <div class="dropdownWrap" id="projWrap">
+      <button id="projToggle" class="menuBtn" aria-haspopup="true" aria-expanded="false">Proyecto <span class="caret">▾</span></button>
+      <div class="dropdownPanel menuPanel" id="projPanel">
+        <div class="menuItem"><button id="btnNewProject">Nuevo</button></div>
+        <div class="menuItem"><button id="btnOpenProject">Abrir .hvt</button></div>
+        <input type="file" id="projectFileInput" class="fileHidden" accept=".hvt,application/json">
+        <div class="menuItem"><button id="btnSaveProject">Guardar .hvt</button></div>
+        <div class="menuItem"><button id="btnSaveTextOnly">Guardar solo texto .hvt</button></div>
+        <div class="menuRule"></div>
+        <div class="menuItem"><button id="btnExportMd">Exportar tabla .md</button></div>
+        <div class="menuRule"></div>
+        <div class="menuItem"><button id="btnExportSrt">Subtítulos .srt</button></div>
+        <div class="menuItem"><button id="btnExportVtt">Subtítulos .vtt</button></div>
+        <div class="menuRule"></div>
+        <div class="menuItem"><button id="btnExportWav">Audio del proyecto .wav</button></div>
+        <div class="menuItem"><button id="btnExportIndex">Índice de tomas .csv</button></div>
+      </div>
+    </div>
+
+    <!-- Edición: las acciones que aplican al texto van Enabled/Disabled, y las que
+         dependen de la selección (negrita, cursiva) se encienden solas al seleccionar. -->
+    <div class="dropdownWrap" id="editWrap">
+      <button id="editToggle" class="menuBtn" aria-haspopup="true" aria-expanded="false">Edición <span class="caret">▾</span></button>
+      <div class="dropdownPanel menuPanel" id="editPanel">
+        <div class="menuItem"><button id="btnBold" class="onSelection" disabled><b>N</b><span class="miLabel">Negrita</span><span class="miKeys">Ctrl+B</span></button></div>
+        <div class="menuItem"><button id="btnItalic" class="onSelection" disabled><i>C</i><span class="miLabel">Cursiva</span><span class="miKeys">Ctrl+I</span></button></div>
+        <div class="menuItem"><button id="btnChar"><span class="miLabel">Personaje</span></button></div>
+      </div>
+    </div>
+
+    <span class="toolsColLabel" title="Idioma para contar sílabas al peinar la adaptación">Sílabas</span>
+    <select id="langSel" title="Idioma para contar sílabas al peinar la adaptación">
+      <option value="es">Español</option>
+      <option value="en">Inglés</option>
+    </select>
+  </div>
+  <!-- La referencia cabe en la barra como miniatura y se suelta con el pin. Con
+       position:fixed en estado suelto, la barra no crece al soltarla. -->
+  <button id="btnPinRef" class="pinBtn" aria-pressed="false"
+          title="Soltar la referencia para verla en grande">
+    <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M14 2v6l2 2v2h-4v8h-2v-8H6v-2l2-2V2H6.5L4 4.5 2.5 3 7 .5 8.5 2H14zm4 20H6v-2h12v2z"/></svg>
+  </button>
+  <div id="videoBox" class="docked">
+    <div id="videoGrip" title="Arrastra para colocar la referencia donde quieras"></div>
+    <div class="placeholder"><span class="phShort">Sin ref</span><span class="phLong">Sin referencia cargada<br>(video o audio local)</span></div>
+    <div id="emoIndicator" style="display:none;">🙂</div>
+  </div>
+</div>
+<div id="topbarHint" title="Con el botón derecho sobre una adaptación se asigna la emoción">Clic derecho en una adaptación = asignar emoción</div>
+
+<div id="refStripWrap">
+  <div id="refStrip">
+    <canvas id="refStripCanvas"></canvas>
+    <div id="refStripPlayhead"></div>
+    <div id="refStripEmpty">Sin referencia — al grabar, aquí aparece la waveform de tu audio; al cargar un video, aparece la del video</div>
+  </div>
+  <div id="refStripHandle"><div class="grip"></div><button id="btnToggleStrip" class="stripToggle" title="Plegar la waveform" aria-expanded="true">▾</button></div>
+</div>
+
+<div id="columnsWrap">
+  <div class="col-tabs" id="tabsLeft"></div>
+  <div id="columns"></div>
+  <div class="col-tabs" id="tabsRight"></div>
+</div>
+
+<div id="statusBar"><span id="statusMsg">Sin proyecto.</span><span class="sep"></span>Línea activa: <span id="activeLineLabel">ninguna</span><button id="btnAddCue" class="statusAddCue" title="Añadir una línea en blanco al final">+ Línea</button><span class="autosaveNote"> · el texto se autoguarda solo</span><button id="btnToggleBottom" class="bottomToggle" title="Plegar el panel inferior" aria-expanded="true">▾ panel</button></div>
+
+<div id="timelinePanel">
+  <div id="timelineTransport">
+    <button id="tlPlay" title="Reproducir (referencia si hay; si no, la toma de la línea activa)">▶</button>
+    <button id="tlPause" title="Pausar">⏸</button>
+    <button id="tlStop" title="Detener y volver al inicio">⏹</button>
+    <button id="tlPrev" title="Saltar a la línea anterior que tenga toma">⏮</button>
+    <button id="tlNext" title="Saltar a la línea siguiente que tenga toma">⏭</button>
+    <span class="tsep"></span>
+    <button id="tlWalk" class="tgl" aria-pressed="false" title="Recorrer: ▶ suena la toma de cada línea, una detrás de otra, y la columna activa va siguiendo. Sin esto se comporta como hasta ahora.">Recorrer</button>
+    <label class="tgroup" title="Cuántas veces suena la misma línea antes de pasar a la siguiente">
+      repetir
+      <select id="tlRepeat">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="inf">∞</option>
+      </select>
+    </label>
+    <label class="tgroup" title="Velocidad. A menos de 1× la voz mantiene su altura; sin eso suena a dibujo animado y no sirve para juzgar la pronunciación">
+      velocidad
+      <select id="tlSpeed">
+        <option value="0.5">0,5×</option>
+        <option value="0.75">0,75×</option>
+        <option value="0.9">0,9×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.1">1,1×</option>
+        <option value="1.25">1,25×</option>
+        <option value="1.5">1,5×</option>
+        <option value="2">2×</option>
+      </select>
+    </label>
+    <label class="tgroup tcheck" title="En vez de pasar de una toma a la siguiente sin parar, se espera en silencio hasta el timecode de la línea siguiente, que es como suena la mezcla final">
+      <input type="checkbox" id="tlSync"> respetar timecodes
+    </label>
+    <span class="hint" id="tlHint">Con el video de referencia cargado, ▶ y ⏸ lo gobiernan. <b>Recorrer</b> es para las tomas: ▶ las encadena línea a línea.</span>
+  </div>
+  <div id="timelineScroll">
+    <div id="timelineMarkers"></div>
+    <div id="timelineRuler"></div>
+    <div id="timelineTracks"></div>
+    <div id="timelinePlayhead" style="left:0;"></div>
+  </div>
+</div>
+
+<div id="bottombar">
+  <button id="recBtn"><span class="dot"></span></button>
+  <div id="waveWrap"><canvas id="wave"></canvas></div>
+  <div id="volBtn" class="dropdownWrap">
+    <button id="volToggle">🔊</button>
+    <div id="volPanel">🔉<input type="range" id="volRange" min="0" max="100" value="80">🔊</div>
+  </div>
+  <button id="btnRawFiles">📂 Archivos crudos</button>
+</div>
+
+<div id="ctxMenu"></div>
+
+<div id="rawModalOverlay">
+  <div id="rawModal">
+    <header>
+      <h3>Archivos de grabación crudos</h3>
+      <button id="btnCloseRaw">✕</button>
+    </header>
+    <div id="rawList"></div>
+    <footer>El navegador no puede abrir tu explorador de archivos del sistema por seguridad. Desde aquí puedes reproducir o descargar cada toma cruda individualmente.</footer>
+  </div>
+</div>
+
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ctxmenu.js"></script>
+<script src="js/columns.js"></script>
+<script src="js/refstrip.js"></script>
+<script src="js/sources.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/timeline.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/project.js"></script>
+</body>
+</html>
